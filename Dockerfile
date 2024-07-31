@@ -7,7 +7,8 @@ WORKDIR /app
 
 ENV STMP_PORT=25
 ENV API_PORT=3000
-ENV DATABASE_URL=
+ENV API_TOKEN=test-token
+ENV DATABASE_URL=postgres@localhost:5432/postgres
 
 # 复制项目文件
 COPY . .
