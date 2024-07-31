@@ -34,7 +34,7 @@ type ClearEmailsResponse = Response<{
 }>
 
 export function startApiServer(port: number, db: PrismaClient): () => void {
-  const server = fastify({ logger: true })
+  const server = fastify({ logger: false })
 
   //** token 检查 */
   server.addHook('preHandler', (request, reply, done) => {
@@ -106,12 +106,13 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
   })
 
 
-  server.listen({ port }, (err, address) => {
+  server.listen({ port }, err => {
     if (err) {
       console.error(err)
       process.exit(1)
     }
-    console.log(`Server listening at ${address}`)
+
+    console.log(`API server listening at port ${port}`)
   })
 
   return () => server.close()

@@ -44,6 +44,8 @@ export function startStmpServer(port: number, db: PrismaClient): () => void {
       })
     }
   })
-  server.listen(port)
+  server.listen(port, () => {
+    console.log(`STMP server listening at port ${port}`)
+  })
   return () => server.close()
 }
