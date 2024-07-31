@@ -1,4 +1,4 @@
-FROM node:22-alpine3.19 AS builder
+FROM node:22-alpine3.19
 
 LABEL maintainer="Alain <me@yinxulai.com>"
 
@@ -7,6 +7,7 @@ WORKDIR /app
 
 ENV STMP_PORT=25
 ENV API_PORT=3000
+ENV DEBUG_LOG=false
 ENV API_TOKEN=test-token
 ENV DATABASE_URL=postgres@localhost:5432/postgres
 
@@ -16,7 +17,7 @@ RUN rm -rf node_modules
 RUN npm install
 RUN npm run build
 
-ENTRYPOINT ["npm", "start"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 # DEBUG
-# ENTRYPOINT ["sleep", "infinity"] 
+# ENTRYPOINT ["sleep", "infinity"]

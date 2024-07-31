@@ -12,6 +12,7 @@ const apiPort = parseInt(process.env.API_PORT!) || 3000
 const stmpPort = parseInt(process.env.STMP_PORT!) || 3025
 
 const db = new PrismaClient({ datasourceUrl })
+
 const apiCloser = startApiServer(apiPort, db)
 const stmpCloser = startStmpServer(stmpPort, db)
 

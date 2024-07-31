@@ -10,14 +10,14 @@ export function startStmpServer(port: number, db: PrismaClient): () => void {
           return callback(err)
         }
 
-        const sender: string[] = []
-        const receiver: string[] = []
+        const senders: string[] = []
+        const receivers: string[] = []
         const content = mail.html || mail.text || 'No content'
 
         if (mail.from && mail.from.value) {
           for (let index = 0; index < mail.from.value.length; index++) {
             const emailAddress = mail.from.value[index]
-            if (emailAddress.address) sender.push(emailAddress.address)
+            if (emailAddress.address) senders.push(emailAddress.address)
           }
         }
 
@@ -27,16 +27,16 @@ export function startStmpServer(port: number, db: PrismaClient): () => void {
             const address = toArray[xIndex]
             for (let yIndex = 0; yIndex < address.value.length; yIndex++) {
               const emailAddress = address.value[yIndex]
-              if (emailAddress.address) receiver.push(emailAddress.address)
+              if (emailAddress.address) receivers.push(emailAddress.address)
             }
           }
         }
 
         await db.emailInbox.create({
           data: {
-            sender,
-            receiver,
-            content
+            content,
+            senders: senders,
+            receivers: receivers,
           }
         })
 

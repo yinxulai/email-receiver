@@ -14,9 +14,9 @@ datasource db {
 }
 
 model EmailInbox {
-  id       Int      @id @default(autoincrement())
-  sender   String[]
-  receiver String[]
-  content  String
+  id        Int      @id @default(autoincrement())
+  content   String
+  senders   String[]
+  receivers String[]
   createdTime DateTime @default(now())
 }

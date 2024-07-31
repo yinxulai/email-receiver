@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "init": "prisma db push",
     "build": "prisma generate",
     "start": "tsx ./source/index.ts",
     "dev": "tsx watch ./source/index.ts"

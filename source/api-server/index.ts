@@ -2,9 +2,7 @@ import fastify from 'fastify'
 import { PrismaClient, EmailInbox } from '@prisma/client'
 
 interface Response<T = unknown> {
-  200: {
-    data: T
-  },
+  200: T,
   '4xx': {
     error: string
     message: string
@@ -16,8 +14,8 @@ interface Response<T = unknown> {
 }
 
 interface QueryEmailsRequest {
-  sender?: string[]
-  receiver?: string[]
+  senders?: string[]
+  receivers?: string[]
 }
 
 type QueryEmailsResponse = Response<{
@@ -34,7 +32,8 @@ type ClearEmailsResponse = Response<{
 }>
 
 export function startApiServer(port: number, db: PrismaClient): () => void {
-  const server = fastify({ logger: false })
+  const debugLog = process.env.DEBUG_LOG
+  const server = fastify({ logger: debugLog === 'true' })
 
   //** token 检查 */
   server.addHook('preHandler', (request, reply, done) => {
@@ -75,33 +74,31 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
       where: { createdTime: { lt: deleteTime } }
     })
 
-    return reply.code(200).send({ data: result })
+    return reply.code(200).send(result)
   })
 
   /** 查询邮件 */
   server.post<{ Body: QueryEmailsRequest, Reply: QueryEmailsResponse }>('/query', async (request, reply) => {
-    const { receiver = [], sender = [] } = request.body
+    const { receivers: receivers = [], senders: senders = [] } = request.body
 
-    if (!receiver && !sender) {
+    if (!receivers.length && !senders.length) {
       return reply.code(400).send({
         error: 'Bad Request',
-        message: 'sender or receiver is required'
+        message: 'senders or receivers is required'
       })
     }
 
     const result = await db.emailInbox.findMany({
       where: {
-        ...(sender.length > 0 ? { sender: { hasSome: sender } } : {}),
-        ...(receiver.length > 0 ? { receiver: { hasSome: receiver } } : {})
+        ...(senders.length > 0 ? { senders: { hasSome: senders } } : {}),
+        ...(receivers.length > 0 ? { receivers: { hasSome: receivers } } : {})
       },
       orderBy: { createdTime: 'desc' }
     })
 
     return reply.code(200).send({
-      data: {
-        emails: result,
-        count: result.length
-      }
+      emails: result,
+      count: result.length
     })
   })
 
