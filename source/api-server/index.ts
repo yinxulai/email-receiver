@@ -1,6 +1,5 @@
-import * as https from 'https'
+import fastify from 'fastify'
 import { PrismaClient, EmailInbox } from '@prisma/client'
-import fastify, { FastifyInstance, FastifyPluginCallback, FastifyRequest, preHandlerHookHandler } from 'fastify'
 
 interface Response<T = unknown> {
   200: {
@@ -26,9 +25,18 @@ type QueryEmailsResponse = Response<{
   emails: EmailInbox[]
 }>
 
+interface ClearEmailsRequest {
+  beforeDays: number
+}
+
+type ClearEmailsResponse = Response<{
+  count: number
+}>
+
 export function startApiServer(port: number, db: PrismaClient): () => void {
   const server = fastify({ logger: true })
 
+  //** token 检查 */
   server.addHook('preHandler', (request, reply, done) => {
     const apiToken = process.env.API_TOKEN
     if (typeof apiToken !== 'string') {
@@ -54,7 +62,23 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
     done()
   })
 
+  /** 清理过期邮件 */
+  server.post<{ Body: ClearEmailsRequest, Reply: ClearEmailsResponse }>('/clear', async (request, reply) => {
+    const { beforeDays = 10 } = request.body
+    // 获取当前时间
+    const deleteTime = new Date()
 
+    // 设置为 10 天前的时间
+    deleteTime.setDate(deleteTime.getDate() - beforeDays)
+
+    const result = await db.emailInbox.deleteMany({
+      where: { createdTime: { lt: deleteTime } }
+    })
+
+    return reply.code(200).send({ data: result })
+  })
+
+  /** 查询邮件 */
   server.post<{ Body: QueryEmailsRequest, Reply: QueryEmailsResponse }>('/query', async (request, reply) => {
     const { receiver = [], sender = [] } = request.body
 
@@ -69,7 +93,8 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
       where: {
         ...(sender.length > 0 ? { sender: { hasSome: sender } } : {}),
         ...(receiver.length > 0 ? { receiver: { hasSome: receiver } } : {})
-      }
+      },
+      orderBy: { createdTime: 'desc' }
     })
 
     return reply.code(200).send({
@@ -79,6 +104,7 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
       }
     })
   })
+
 
   server.listen({ port }, (err, address) => {
     if (err) {

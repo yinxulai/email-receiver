@@ -18,4 +18,5 @@ model EmailInbox {
   sender   String[]
   receiver String[]
   content  String
+  createdTime DateTime @default(now())
 }
