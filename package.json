@@ -1,0 +1,24 @@
+{
+  "name": "email-receiver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "prisma generate",
+    "start": "tsx ./source/index.ts",
+    "dev": "tsx watch ./source/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/mailparser": "^3.4.4",
+    "@types/smtp-server": "^3.5.10",
+    "prisma": "^5.17.0",
+    "tsx": "^4.16.2",
+    "@prisma/client": "5.17.0",
+    "fastify": "^4.28.1",
+    "mailparser": "^3.7.1",
+    "smtp-server": "^3.13.4"
+  }
+}
