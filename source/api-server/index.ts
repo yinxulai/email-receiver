@@ -1,5 +1,5 @@
 import fastify from 'fastify'
-import { PrismaClient, EmailInbox } from '@prisma/client'
+import { PrismaClient, EmailInbox, Prisma } from '@prisma/client'
 import { Server } from '../type'
 
 interface Response<T = unknown> {
@@ -14,9 +14,19 @@ interface Response<T = unknown> {
   }
 }
 
-interface QueryEmailsRequest {
+interface EmailFilter {
   to?: string[]
   from?: string[]
+}
+
+interface QueryPaging {
+  size: number
+  page: number
+}
+
+interface QueryEmailsRequest {
+  filter?: EmailFilter
+  paging?: QueryPaging
 }
 
 type QueryEmailsResponse = Response<{
@@ -80,29 +90,34 @@ export function createApiServer(port: number, db: PrismaClient): Server {
 
   /** 查询邮件 */
   server.post<{ Body: QueryEmailsRequest, Reply: QueryEmailsResponse }>('/query', async (request, reply) => {
-    const { to = [], from = [] } = request.body
+    const { filter, paging } = request.body
 
-    if (!to.length && !from.length) {
-      return reply.code(400).send({
-        error: 'Bad Request',
-        message: 'senders or receivers is required'
-      })
+    const where: Prisma.EmailInboxWhereInput = {}
+
+    if (filter && filter.to && filter.to.length > 0) {
+      where.to = { hasSome: filter.to }
     }
 
-    const result = await db.emailInbox.findMany({
-      where: {
-        ...(to.length > 0 ? { to: { hasSome: to } } : {}),
-        ...(from.length > 0 ? { from: { hasSome: from } } : {}),
-      },
+    if (filter && filter.from && filter.from.length > 0) {
+      where.from = { hasSome: filter.from }
+    }
+
+    const count = await db.emailInbox.count({ where })
+
+    const pageSize = paging?.size || 10
+    const pageIndex = paging?.page || 1
+    const emails = await db.emailInbox.findMany({
+      where,
+      take: pageSize,
+      skip: (pageIndex - 1) * pageSize,
       orderBy: { createdTime: 'desc' }
     })
 
     return reply.code(200).send({
-      emails: result,
-      count: result.length
+      emails,
+      count
     })
   })
-
 
   function close() {
     return new Promise<void>((resolve) => {
