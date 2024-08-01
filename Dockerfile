@@ -11,6 +11,9 @@ ENV DEBUG_LOG=false
 ENV API_TOKEN=test-token
 ENV DATABASE_URL=postgres@localhost:5432/postgres
 
+EXPOSE $STMP_PORT
+EXPOSE $API_PORT
+
 # 复制项目文件
 COPY . .
 RUN rm -rf node_modules

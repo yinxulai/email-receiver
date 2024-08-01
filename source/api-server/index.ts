@@ -112,7 +112,7 @@ export function createApiServer(port: number, db: PrismaClient): Server {
 
   function start() {
     return new Promise<void>((resolve) => {
-      server.listen({ port }, err => {
+      server.listen({ port, host: '0.0.0.0' }, err => {
         if (err) {
           console.error(err)
           process.exit(1)
