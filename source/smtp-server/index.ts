@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 
 import { Server } from '../type'
-import { createStmpServer as createInternalStmpServer } from './server'
+import { createSmtpServer as createInternalStmpServer } from './server'
 
-export function createStmpServer(port: number, db: PrismaClient): Server {
+export function createSmtpServer(port: number, db: PrismaClient): Server {
   const server = createInternalStmpServer(port)
 
   server.onEmail(async (email) => {

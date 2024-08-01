@@ -13,7 +13,7 @@ interface StmpServer extends Server {
   onEmail: (call: (email: Email) => void) => void
 }
 
-export function createStmpServer(port: number): StmpServer {
+export function createSmtpServer(port: number): StmpServer {
   const emailCallbacks = new Set<((email: Email) => void)>()
 
   const server = new SMTPServer({

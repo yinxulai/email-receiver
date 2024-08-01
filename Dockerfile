@@ -5,13 +5,13 @@ LABEL maintainer="Alain <me@yinxulai.com>"
 # 设置工作目录
 WORKDIR /app
 
-ENV STMP_PORT=25
+ENV SMTP_PORT=25
 ENV API_PORT=3000
 ENV DEBUG_LOG=false
 ENV API_TOKEN=test-token
 ENV DATABASE_URL=postgres@localhost:5432/postgres
 
-EXPOSE $STMP_PORT
+EXPOSE $SMTP_PORT
 EXPOSE $API_PORT
 
 # 复制项目文件

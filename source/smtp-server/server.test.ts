@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer'
 
 import { getRandomHighPort } from '../helper'
-import { createStmpServer, Email } from './server'
+import { createSmtpServer, Email } from './server'
 
 interface MockEmail {
   to?: string,
@@ -30,7 +30,7 @@ function sendTestEmail(port: number, email: MockEmail) {
 describe('ReceiveEmail', () => {
   it('receive mail normally', async () => {
     const port = getRandomHighPort()
-    const server = createStmpServer(port)
+    const server = createSmtpServer(port)
 
     var email: Email | undefined
     server.onEmail(inbox => email = inbox)
