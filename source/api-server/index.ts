@@ -14,8 +14,8 @@ interface Response<T = unknown> {
 }
 
 interface QueryEmailsRequest {
-  senders?: string[]
-  receivers?: string[]
+  to?: string[]
+  from?: string[]
 }
 
 type QueryEmailsResponse = Response<{
@@ -79,9 +79,9 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
 
   /** 查询邮件 */
   server.post<{ Body: QueryEmailsRequest, Reply: QueryEmailsResponse }>('/query', async (request, reply) => {
-    const { receivers: receivers = [], senders: senders = [] } = request.body
+    const { to = [], from = [] } = request.body
 
-    if (!receivers.length && !senders.length) {
+    if (!to.length && !from.length) {
       return reply.code(400).send({
         error: 'Bad Request',
         message: 'senders or receivers is required'
@@ -90,8 +90,8 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
 
     const result = await db.emailInbox.findMany({
       where: {
-        ...(senders.length > 0 ? { senders: { hasSome: senders } } : {}),
-        ...(receivers.length > 0 ? { receivers: { hasSome: receivers } } : {})
+        ...(to.length > 0 ? { to: { hasSome: to } } : {}),
+        ...(from.length > 0 ? { from: { hasSome: from } } : {}),
       },
       orderBy: { createdTime: 'desc' }
     })
