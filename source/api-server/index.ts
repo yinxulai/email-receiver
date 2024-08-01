@@ -1,5 +1,6 @@
 import fastify from 'fastify'
 import { PrismaClient, EmailInbox } from '@prisma/client'
+import { Server } from '../type'
 
 interface Response<T = unknown> {
   200: T,
@@ -31,7 +32,7 @@ type ClearEmailsResponse = Response<{
   count: number
 }>
 
-export function startApiServer(port: number, db: PrismaClient): () => void {
+export function createApiServer(port: number, db: PrismaClient): Server {
   const debugLog = process.env.DEBUG_LOG
   const server = fastify({ logger: debugLog === 'true' })
 
@@ -103,14 +104,24 @@ export function startApiServer(port: number, db: PrismaClient): () => void {
   })
 
 
-  server.listen({ port }, err => {
-    if (err) {
-      console.error(err)
-      process.exit(1)
-    }
+  function close() {
+    return new Promise<void>((resolve) => {
+      server.close(resolve)
+    })
+  }
 
-    console.log(`API server listening at port ${port}`)
-  })
+  function start() {
+    return new Promise<void>((resolve) => {
+      server.listen({ port }, err => {
+        if (err) {
+          console.error(err)
+          process.exit(1)
+        }
 
-  return () => server.close()
+        resolve()
+      })
+    })
+  }
+
+  return { start, close }
 }

@@ -15,6 +15,7 @@ ENV DATABASE_URL=postgres@localhost:5432/postgres
 COPY . .
 RUN rm -rf node_modules
 RUN npm install
+RUN npm run test
 RUN npm run build
 
 ENTRYPOINT ["./entrypoint.sh"]

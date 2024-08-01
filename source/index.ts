@@ -1,7 +1,7 @@
 
 import { PrismaClient } from '@prisma/client'
-import { startApiServer } from './api-server'
-import { startStmpServer } from './stmp-server'
+import { createApiServer } from './api-server'
+import { createStmpServer } from './stmp-server'
 
 import pkg from '../package.json'
 
@@ -13,12 +13,15 @@ const stmpPort = parseInt(process.env.STMP_PORT!) || 3025
 
 const db = new PrismaClient({ datasourceUrl })
 
-const apiCloser = startApiServer(apiPort, db)
-const stmpCloser = startStmpServer(stmpPort, db)
+const apiServer = createApiServer(apiPort, db)
+const stmpServer = createStmpServer(stmpPort, db)
 
-process.on('SIGINT', () => {
-  apiCloser()
-  stmpCloser()
+apiServer.start().then(() => console.log(`api server started on port ${apiPort}`))
+stmpServer.start().then(() => console.log(`stmp server started on port ${stmpPort}`))
+
+process.on('SIGINT', async () => {
+  await stmpServer.close()
+  await apiServer.close()
   db.$disconnect()
   process.exit(0)
 })
