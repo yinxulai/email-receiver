@@ -14,7 +14,7 @@ datasource db {
 }
 
 model EmailInbox {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid())
   to          String[]
   from        String[]
   content     String
