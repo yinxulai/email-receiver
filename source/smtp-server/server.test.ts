@@ -7,7 +7,8 @@ interface MockEmail {
   to?: string,
   from?: string,
   subject?: string,
-  content?: string
+  contentHtml?: string
+  contentText?: string
 }
 
 function sendTestEmail(port: number, email: MockEmail) {
@@ -20,7 +21,7 @@ function sendTestEmail(port: number, email: MockEmail) {
   })
 
   return transporter.sendMail({
-    text: email.content || 'Hello world',
+    text: email.contentHtml || 'Hello world',
     subject: email.subject || 'Test email',
     from: email.from || '"Sender" <sender@example.com>',
     to: email.to || '"Receiver" <receiver@example.com>',
@@ -41,7 +42,8 @@ describe('ReceiveEmail', () => {
       to: 'receiver@example.com',
       from: 'sender@example.com',
       subject: 'Test email',
-      content: 'Hello world',
+      contentText: 'Hello world',
+      contentHtml: '<a>Hello world</a>',
     }
 
     await sendTestEmail(port, sendEmail)
@@ -50,7 +52,8 @@ describe('ReceiveEmail', () => {
     expect(email?.to).toContain(sendEmail.to)
     expect(email?.from).toContain(sendEmail.from)
     expect(email?.subject).toContain(sendEmail.subject)
-    expect(email?.content).toContain(sendEmail.content)
+    expect(email?.contentText).toContain(sendEmail.contentText)
+    expect(email?.contentHtml).toContain(sendEmail.contentHtml)
 
     await server.close()
   })

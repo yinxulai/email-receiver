@@ -1,3 +1,4 @@
+import { convert } from 'html-to-text'
 import { SMTPServer } from 'smtp-server'
 import { simpleParser } from 'mailparser'
 import { Server } from '../type'
@@ -5,8 +6,9 @@ import { Server } from '../type'
 export interface Email {
   to: string[]
   from: string[]
-  content: string
   subject: string
+  contentHtml: string
+  contentText: string
 }
 
 interface StmpServer extends Server {
@@ -26,7 +28,8 @@ export function createSmtpServer(port: number): StmpServer {
         const to: string[] = []
         const from: string[] = []
         const subject = email.subject || ''
-        const content = email.html || email.text || ''
+        const contentHtml = email.text || ''
+        const contentText = convert(contentHtml)
 
         if (email.from && email.from.value) {
           for (let index = 0; index < email.from.value.length; index++) {
@@ -46,7 +49,7 @@ export function createSmtpServer(port: number): StmpServer {
           }
         }
 
-        emitEmail({ to, from, subject, content, })
+        emitEmail({ to, from, subject, contentHtml, contentText })
         callback()
       })
     },

@@ -17,7 +17,8 @@ model EmailInbox {
   id          String   @id @default(uuid())
   to          String[]
   from        String[]
-  content     String
   subject     String
+  contentHtml String
+  contentText String
   createdTime DateTime @default(now())
 }
