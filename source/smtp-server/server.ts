@@ -28,7 +28,8 @@ export function createSmtpServer(port: number): StmpServer {
         const to: string[] = []
         const from: string[] = []
         const subject = email.subject || ''
-        const contentHtml = email.text || ''
+        const contentHtml = email.html || email.text || ''
+        
         const contentText = convert(contentHtml)
 
         if (email.from && email.from.value) {
