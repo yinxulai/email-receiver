@@ -19,5 +19,5 @@ module.exports = {
   coverageReporters: ['json', 'lcov', 'text', 'clover'],
 
   // 自动清理模拟对象
-  clearMocks: true,
+  clearMocks: true
 }

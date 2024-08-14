@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "lint": "standard",
     "init": "prisma db push",
     "build": "prisma generate",
     "start": "tsx ./source/index.ts",
@@ -14,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "standard": "^17.1.0",
     "@prisma/client": "5.17.0",
     "@types/jest": "^29.5.12",
     "@types/mailparser": "^3.4.4",
