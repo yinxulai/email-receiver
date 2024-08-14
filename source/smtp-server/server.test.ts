@@ -33,7 +33,7 @@ describe('ReceiveEmail', () => {
     const port = getRandomHighPort()
     const server = createSmtpServer(port)
 
-    var email: Email | undefined
+    let email: Email | undefined
     server.onEmail(inbox => email = inbox)
 
     await server.start()

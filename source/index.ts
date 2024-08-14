@@ -5,7 +5,7 @@ import { createSmtpServer } from './smtp-server'
 
 import pkg from '../package.json'
 
-console.log("Version:", pkg.version)
+console.log('Version:', pkg.version)
 
 const datasourceUrl = process.env.DATABASE_URL
 const apiPort = parseInt(process.env.API_PORT!) || 3000
