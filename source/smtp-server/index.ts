@@ -7,15 +7,9 @@ export function createSmtpServer(port: number, db: PrismaClient): Server {
   const server = createInternalStmpServer(port)
 
   server.onEmail(async email => {
-    await db.emailInbox.create({
-      data: {
-        to: email.to,
-        from: email.from,
-        subject: email.subject,
-        contentHtml: email.contentHtml,
-        contentText: email.contentText,
-      }
-    })
+    db.emailInbox.create({ data: email })
+      .then(() => console.log('received email successfully form ' + email.from))
+      .catch(error => console.error('received email failed form ' + email.from, error))
   })
 
   return server
