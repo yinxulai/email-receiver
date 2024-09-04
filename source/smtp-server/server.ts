@@ -50,7 +50,9 @@ export function createSmtpServer(port: number): StmpServer {
           }
         }
 
-        emitEmail({ to, from, subject, contentHtml, contentText })
+        const emailData = { to, from, subject, contentHtml, contentText }
+        emitEmail(emailData)
+        callback(null)
       })
     },
     // 禁用身份验证
