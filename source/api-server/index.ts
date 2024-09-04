@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import { PrismaClient, Prisma } from '@prisma/client'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
+import { validatorCompiler, serializerCompiler } from 'fastify-type-provider-zod'
 
 import { Server } from '../type'
 import * as s from './schema'
@@ -9,6 +10,8 @@ export function createApiServer(port: number, db: PrismaClient): Server {
   const debugLog = process.env.DEBUG_LOG
   const server = fastify({ logger: debugLog === 'true' })
 
+  server.setValidatorCompiler(validatorCompiler)
+  server.setSerializerCompiler(serializerCompiler)
   const typedServer = server.withTypeProvider<ZodTypeProvider>()
 
   //** token 检查 */

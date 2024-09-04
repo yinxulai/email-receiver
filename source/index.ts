@@ -16,8 +16,8 @@ const db = new PrismaClient({ datasourceUrl })
 const apiServer = createApiServer(apiPort, db)
 const smtpServer = createSmtpServer(smtpPort, db)
 
-apiServer.start().then(() => console.log(`api server started on port ${apiPort}`))
 smtpServer.start().then(() => console.log(`smtp server started on port ${smtpPort}`))
+apiServer.start().then(() => console.log(`api server started on port ${apiPort}`))
 
 process.on('SIGINT', async () => {
   await smtpServer.close()
