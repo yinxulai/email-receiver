@@ -1,53 +1,18 @@
 import fastify from 'fastify'
-import { PrismaClient, EmailInbox, Prisma } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
+import { ZodTypeProvider } from 'fastify-type-provider-zod'
+
 import { Server } from '../type'
-
-interface Response<T = unknown> {
-  200: T,
-  '4xx': {
-    error: string
-    message: string
-  },
-  '5xx': {
-    error: string
-    message: string
-  }
-}
-
-interface EmailFilter {
-  to?: string[]
-  from?: string[]
-}
-
-interface QueryPaging {
-  size: number
-  page: number
-}
-
-interface QueryEmailsRequest {
-  filter?: EmailFilter
-  paging?: QueryPaging
-}
-
-type QueryEmailsResponse = Response<{
-  count: number
-  emails: EmailInbox[]
-}>
-
-interface ClearEmailsRequest {
-  beforeDays: number
-}
-
-type ClearEmailsResponse = Response<{
-  count: number
-}>
+import * as s from './schema'
 
 export function createApiServer(port: number, db: PrismaClient): Server {
   const debugLog = process.env.DEBUG_LOG
   const server = fastify({ logger: debugLog === 'true' })
 
+  const typedServer = server.withTypeProvider<ZodTypeProvider>()
+
   //** token 检查 */
-  server.addHook('preHandler', (request, reply, done) => {
+  typedServer.addHook('preHandler', (request, reply, done) => {
     const apiToken = process.env.API_TOKEN
     if (typeof apiToken !== 'string') {
       return done()
@@ -72,24 +37,8 @@ export function createApiServer(port: number, db: PrismaClient): Server {
     done()
   })
 
-  /** 清理过期邮件 */
-  server.post<{ Body: ClearEmailsRequest, Reply: ClearEmailsResponse }>('/clear', async (request, reply) => {
-    const { beforeDays = 10 } = request.body
-    // 获取当前时间
-    const deleteTime = new Date()
-
-    // 设置为 10 天前的时间
-    deleteTime.setDate(deleteTime.getDate() - beforeDays)
-
-    const result = await db.emailInbox.deleteMany({
-      where: { createdTime: { lt: deleteTime } }
-    })
-
-    return reply.code(200).send(result)
-  })
-
   /** 查询邮件 */
-  server.post<{ Body: QueryEmailsRequest, Reply: QueryEmailsResponse }>('/query', async (request, reply) => {
+  typedServer.post('/query', { schema: s.QueryEmailSchema }, async request => {
     const { filter, paging } = request.body
 
     const where: Prisma.EmailInboxWhereInput = {}
@@ -105,7 +54,7 @@ export function createApiServer(port: number, db: PrismaClient): Server {
     const count = await db.emailInbox.count({ where })
 
     const pageSize = paging?.size || 10
-    const pageIndex = paging?.page || 1
+    const pageIndex = paging?.index || 1
     const emails = await db.emailInbox.findMany({
       where,
       take: pageSize,
@@ -113,15 +62,19 @@ export function createApiServer(port: number, db: PrismaClient): Server {
       orderBy: { createdTime: 'desc' }
     })
 
-    return reply.code(200).send({
-      emails,
-      count
-    })
+    return {
+      status: 'SUCCESS' as const,
+      message: 'success',
+      data: {
+        total: count,
+        list: s.toPlains(emails)
+      }
+    }
   })
 
   function close() {
     return new Promise<void>((resolve) => {
-      server.close(resolve)
+      typedServer.close(resolve)
     })
   }
 
